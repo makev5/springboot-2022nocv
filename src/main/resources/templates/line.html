@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入刚刚下载的 ECharts 文件 -->
+    <script src="/echarts/echarts.min.js"></script>
+    <script src="/echarts/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+</head>
+<body class="childrenBody">
+
+<div style="padding: 20px;">
+    <div id="main" style="width: 600px;height:600px;"></div>
+</div>
+
+<script>
+    var myChart = echarts.init(document.getElementById('main'));
+    var dataList = [];
+    option = {
+        title: {
+            text: 'Stacked Line'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['确诊人数', '隔离人数', '治愈人数', '死亡人数', '疑似人数']
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        },
+        yAxis: {
+            type: 'value'
+        }
+
+    };
+
+    $.ajax({
+        url: "/queryLine",
+        method: "get",
+        dataType: "json",
+        success: function (data) {
+            myChart.setOption({
+                series: [
+                    {
+                        name: '确诊人数',
+                        type: 'line',
+                        stack: 'Total',
+                        data: data.confirmList
+                    },
+                    {
+                        name: '隔离人数',
+                        type: 'line',
+                        stack: 'Total',
+                        data: data.isolationList
+                    },
+                    {
+                        name: '治愈人数',
+                        type: 'line',
+                        stack: 'Total',
+                        data: data.cureList
+                    },
+                    {
+                        name: '死亡人数',
+                        type: 'line',
+                        stack: 'Total',
+                        data: data.deadList
+                    },
+                    {
+                        name: '疑似人数',
+                        type: 'line',
+                        stack: 'Total',
+                        data: data.similarList
+                    }
+                ]
+            })
+        }
+
+    });
+
+    myChart.setOption(option);
+</script>
+
+</body>
+</html>

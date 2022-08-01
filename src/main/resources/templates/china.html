@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8"/>
+    <!-- 引入刚刚下载的 ECharts 文件 -->
+    <script src="/echarts/echarts.min.js"></script>
+    <script src="/echarts/china.js"></script>
+    <script src="/echarts/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+</head>
+<body class="childrenBody">
+
+<div style="padding: 20px;">
+    <div class="layui-bg-gray">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md8">
+                <div class="layui-panel">
+                    <!--四个按钮-->
+                    <div>
+                        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                            <legend>新冠疫情实时数据统计展示---统计时间：[[${#dates.format(chinaTotal.updateTime, 'yyyy-MM-dd HH:mm:ss')}]]</legend>
+                        </fieldset>
+
+                        <div class="layui-btn-container" style="margin-left: 20px;">
+                            <button type="button" class="layui-btn layui-btn-danger" th:text="'确诊人数' + ${chinaTotal.confirm}">默认按钮</button>
+                            <button type="button" class="layui-btn layui-btn-normal" th:text="'输入病例' + ${chinaTotal.input}">百搭按钮</button>
+                            <button type="button" class="layui-btn layui-btn" th:text="'治愈人数' + ${chinaTotal.heal}">暖色按钮</button>
+                            <button type="button" class="layui-btn layui-btn-primary layui-bg-black" th:text="'死亡人数' + ${chinaTotal.dead}">警告按钮</button>
+                        </div>
+                    </div>
+                    <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
+                    <div id="main" style="width: 700px;height:600px;margin: 0 auto;"></div>
+                </div>
+            </div>
+            <div class="layui-col-md4">
+                <div class="layui-panel">
+                    <!-- 轮播图 -->
+                    <div class="layui-carousel" id="test1" lay-filter="test1">
+                        <div carousel-item="">
+                            <div><img th:src="@{/images/banner1.jpeg}" alt=""></div>
+                            <div><img th:src="@{/images/banner2.jpeg}" alt=""></div>
+                            <div><img th:src="@{/images/banner3.jpeg}" alt=""></div>
+                        </div>
+                    </div>
+                    <!-- 新闻数据 -->
+                    <div style="margin-top: 10px;">
+                        <ul class="layui-timeline">
+                        <li class="layui-timeline-item" th:each="nocvNews:${nocvNewsList}">
+                            <i class="layui-icon layui-timeline-axis"></i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title" th:text="${#dates.format(nocvNews.createTime, 'yyyy-MM-dd HH:mm:ss')}">8月18日</h3>
+                                <p>
+                                    <br><span class="layui-badge layui-bg-orange">标题:</span> <span th:text="${nocvNews.title}"></span>
+                                    <br><span class="layui-badge layui-bg-green">内容:</span> <span th:text="${nocvNews.content}"></span>
+                                    <br><span class="layui-badge layui-bg-blue">发布者:</span> <span th:text="${nocvNews.publishby}"></span>
+                                </p>
+                            </div>
+                        </li>
+
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis"></i>
+                            <div class="layui-timeline-content layui-text">
+                                <div class="layui-timeline-title">过去</div>
+                            </div>
+                        </li>
+                    </ul>
+                    </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var myChart = echarts.init(document.getElementById('main'));
+    var dataList = [];
+    option = {
+        tooltip: {
+            triggerOn: "click",
+            formatter: function (e, t, n) {
+                return '.5' == e.value ? e.name + "：有疑似病例" : e.seriesName + "<br />" + e.name + "：" + e.value
+            }
+        },
+        toolbox: {
+            show: true,
+            orient: 'vertical',
+            left: 'right',
+            top: 'center',
+            feature: {
+                dataView: {readOnly: false},
+                restore: {},
+                saveAsImage: {}
+            }
+        }, // 提供下载工具
+        visualMap: {
+            min: 0,
+            max: 100000,
+            left: 26,
+            bottom: 40,
+            showLabel: !0,
+            text: ["高", "低"],
+            pieces: [{
+                gt: 10000,
+                label: "> 10000人",
+                color: "#7f1100"
+            }, {
+                gte: 1000,
+                lte: 10000,
+                label: "1000 - 10000人",
+                color: "#ff5428"
+            }, {
+                gte: 100,
+                lt: 1000,
+                label: "100 - 1000人",
+                color: "#ff8c71"
+            }, {
+                gt: 10,
+                lt: 100,
+                label: "10 - 100人",
+                color: "#ffd768"
+            }, {
+                gt: 1,
+                lt: 10,
+                label: "1 - 10人",
+                color: "#ffffff"
+            }],
+            show: !0
+        },
+        geo: {
+            map: "china",
+            roam: !1,
+            scaleLimit: {
+                min: 1,
+                max: 2
+            },
+            zoom: 1.23,
+            top: 120,
+            label: {
+                normal: {
+                    show: !0,
+                    fontSize: "14",
+                    color: "rgba(0,0,0,0.7)"
+                }
+            },
+            itemStyle: {
+                normal: {
+                    //shadowBlur: 50,
+                    //shadowColor: 'rgba(0, 0, 0, 0.2)',
+                    borderColor: "rgba(0, 0, 0, 0.2)"
+                },
+                emphasis: {
+                    areaColor: "#f2d5ad",
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 0,
+                    borderWidth: 0
+                }
+            }
+        }
+    };
+
+    $.ajax({
+        url: "/query",
+        method: "get",
+        dataType: "json",
+        success: function (data) {
+            for (let i in data) {
+                dataList[i] = data[i];
+            }
+            myChart.setOption({
+                series: [{
+                    name: "确诊病例",
+                    type: "map",
+                    geoIndex: 0,
+                    data: dataList
+                }]
+            })
+        }
+
+    });
+    myChart.setOption(option)
+
+    layui.use(['carousel', 'form'], function() {
+        var carousel = layui.carousel
+            , form = layui.form;
+
+        //常规轮播
+        carousel.render({
+            elem: '#test1'
+            ,arrow: 'always'
+            ,height: '220px'
+            ,width: '100%'
+        });
+    });
+</script>
+
+</body>
+</html>
